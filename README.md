@@ -44,6 +44,16 @@ Onglet **Actions** du dépôt → workflow **"Scan du site toutes les 2h"** →
 bouton **"Run workflow"**. Regarde les logs pour confirmer que tout
 fonctionne.
 
+Pour tester l'envoi d'email même sans modification, coche l'option
+**force_email_on_no_change** dans le lancement manuel du workflow. Le script
+enverra alors un email de test indiquant qu'il n'y a pas eu de changement.
+
+Test local pour simuler le même comportement :
+
+```bash
+SEND_EMAIL_ON_NO_CHANGE=true python scan.py
+```
+
 ## Comment ça marche
 
 - `scan.py` récupère le texte visible de la page, calcule une empreinte

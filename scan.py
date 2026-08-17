@@ -33,6 +33,12 @@ USER_AGENT = os.getenv(
     "REQUEST_USER_AGENT",
     "CharterSiteWatcher/1.0 (+https://github.com/Reemark/charter)",
 )
+SEND_EMAIL_ON_NO_CHANGE = os.getenv("SEND_EMAIL_ON_NO_CHANGE", "false").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 def fetch_page(url: str):
@@ -125,6 +131,15 @@ def main():
 
     if previous["hash"] == current_hash:
         print(f"Aucun changement détecté depuis le {previous.get('scanned_at')}.")
+        if SEND_EMAIL_ON_NO_CHANGE:
+            body = (
+                "Ceci est un email de test : le site a été vérifié et aucun changement n'a été détecté.\n\n"
+                f"URL : {TARGET_URL}\n"
+                f"Date de vérification : {now}\n"
+                f"Dernier scan connu : {previous.get('scanned_at')}\n\n"
+                "Le système de surveillance fonctionne donc normalement et n'a pas détecté de modification."
+            )
+            send_email(f"[Charter Site Watcher] Test de notification - aucun changement sur {TARGET_URL}", body)
         return
 
     print("Changement détecté !")

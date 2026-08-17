@@ -4,8 +4,13 @@ on:
   schedule:
     # Toutes les 2 heures, à la minute 0 (heure UTC)
     - cron: "0 */2 * * *"
-  workflow_dispatch: {}
-    # Permet de lancer le scan manuellement depuis l'onglet "Actions" de GitHub
+  workflow_dispatch:
+    inputs:
+      force_email_on_no_change:
+        description: "Envoyer un email de test même si le site n'a pas changé"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -34,6 +39,7 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           EMAIL_FROM: ${{ secrets.SMTP_USER }}
+          SEND_EMAIL_ON_NO_CHANGE: ${{ inputs.force_email_on_no_change || 'false' }}
         run: python scan.py
 
       - name: Sauvegarder l'état si un changement a été détecté
