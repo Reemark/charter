@@ -39,7 +39,7 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           EMAIL_FROM: ${{ secrets.SMTP_USER }}
-          SEND_EMAIL_ON_NO_CHANGE: ${{ inputs.force_email_on_no_change || 'false' }}
+          SEND_EMAIL_ON_NO_CHANGE: ${{ github.event_name == 'workflow_dispatch' && inputs.force_email_on_no_change == true }}
         run: python scan.py
 
       - name: Sauvegarder l'état si un changement a été détecté
