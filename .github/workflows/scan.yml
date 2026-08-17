@@ -1,0 +1,49 @@
+name: Scan du site toutes les 2h
+
+on:
+  schedule:
+    # Toutes les 2 heures, à la minute 0 (heure UTC)
+    - cron: "0 */2 * * *"
+  workflow_dispatch: {}
+    # Permet de lancer le scan manuellement depuis l'onglet "Actions" de GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Lancer le scan
+        env:
+          TARGET_URL: https://voyage.benin.bj/
+          EMAIL_TO: lordelesly@gmail.com
+          SMTP_HOST: smtp.gmail.com
+          SMTP_PORT: "587"
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_FROM: ${{ secrets.SMTP_USER }}
+        run: python scan.py
+
+      - name: Sauvegarder l'état si un changement a été détecté
+        run: |
+          if [ -n "$(git status --porcelain state/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add state/
+            git commit -m "Mise à jour de l'état du scan [skip ci]"
+            git push
+          else
+            echo "Aucun changement d'état à sauvegarder."
+          fi
